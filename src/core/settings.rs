@@ -18,7 +18,7 @@ pub struct WindowBounds {
 /// 跨程式重啟保留的設定。密碼僅在 `remember_password` 時以 DPAPI 加密儲存。
 #[derive(Debug, Clone, PartialEq)]
 pub struct AppSettings {
-    // 首次安裝不預填伺服器、帳號、工作目錄與 Excel 清單，由使用者自行輸入/選擇後記憶於 config.ini
+    // 安裝後首次執行所有欄位皆為空白，由使用者自行輸入/選擇後記憶於 config.ini
     pub smtp_server: String,
     pub smtp_port: u16,
     pub email_account: String,
@@ -29,7 +29,7 @@ pub struct AppSettings {
     pub global_extra: String,
     pub work_dir: String,
     pub xlsx_path: String,
-    /// 預設為相對路徑 PaySlips，以工作目錄（未設定時為程式目錄）為基準。
+    /// 可為相對路徑，以工作目錄（未設定時為程式目錄）為基準；選擇工作目錄時自動帶入 {工作目錄}\PaySlips。
     pub pdf_folder: String,
     pub year_idx: usize,
     pub month_idx: usize,
@@ -50,7 +50,7 @@ impl Default for AppSettings {
             global_extra: String::new(),
             work_dir: String::new(),
             xlsx_path: String::new(),
-            pdf_folder: "PaySlips".into(),
+            pdf_folder: String::new(),
             year_idx: 0,
             month_idx: 0,
             interval_seconds: 15,
@@ -72,8 +72,7 @@ impl AppSettings {
 
 const SECTION: &str = "Settings";
 
-/// 讀寫 config.ini，與 C++ / .NET 版共用同一份檔案與鍵名。
-/// 視窗位置使用獨立鍵名（RsMainWindow / RsEditorWindow），因單位與 .NET 版（實體像素）不同。
+/// 讀寫 config.ini。鍵名與 C++ / .NET 版相同（檔案格式相容），但存放於 Rust 版自己的資料目錄。
 pub struct SettingsStore {
     ini_path: PathBuf,
 }
@@ -167,7 +166,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn first_run_has_no_preset_smtp_account_or_paths() {
+    fn first_run_everything_is_empty() {
         let dir = tempfile::tempdir().unwrap();
         let s = SettingsStore::new(dir.path()).load(AppSettings::default()).unwrap();
         assert_eq!(s.smtp_server, "");
@@ -175,7 +174,7 @@ mod tests {
         assert_eq!(s.password, "");
         assert_eq!(s.work_dir, "");
         assert_eq!(s.xlsx_path, "");
-        assert_eq!(s.pdf_folder, "PaySlips");
+        assert_eq!(s.pdf_folder, "");
         assert_eq!(s.global_extra, "");
     }
 

@@ -4,15 +4,15 @@
 
 Windows 桌面應用程式，讀取員工清單 Excel 與 PDF 薪資單，透過 SMTP 批量寄送薪資通知郵件，並支援附件管理與 EML 備份。
 
-本版以 .NET 10 版（`C:\Fu_Project\FuFengMailer_NET10`，v2.0.0）為規格，改以 **Rust + egui** 重寫，功能與操作流程一致，並與 C++、.NET 版共用設定檔與範本庫。
+本版以 .NET 10 版（`C:\Fu_Project\FuFengMailer_NET10`，v2.0.0）為規格，改以 **Rust + egui** 重寫，功能與操作流程一致。
 
 ---
 
 ## 特色
 
 - **單一執行檔**：約 8.5 MB，不需安裝 .NET、Visual C++ 可轉發套件或任何執行環境
-- 與 C++ / .NET 版共用 `%APPDATA%\FuFengMailer\` 下的 `config.ini`、`mailContent.default`、`MailTemplates\`
-- 密碼以 Windows DPAPI 加密，格式與 .NET 版相同，兩版可互相讀取
+- 資料存於獨立的 `%APPDATA%\FuFengMailer_Rust\`（`config.ini`、`mailContent.default`、`MailTemplates\`），**不沿用** C++ / .NET 版的設定，安裝後首次執行所有欄位皆為空白；檔案格式仍與其他版本相容，需要時可手動複製過來
+- 密碼以 Windows DPAPI 加密（格式與 .NET 版相同）
 
 ---
 
@@ -51,7 +51,7 @@ Windows 桌面應用程式，讀取員工清單 Excel 與 PDF 薪資單，透過
 - SMTP 伺服器/Port/帳號、略過憑證驗證、工作目錄、Excel 清單、PDF 資料夾、全域附件、年份、月份、間隔
 - 主視窗與編輯視窗的位置/大小（鍵名 `RsMainWindow`、`RsEditorWindow`，與 .NET 版分開，因座標單位不同）
 - 勾選「記住密碼」時以 DPAPI 加密儲存
-- 首次安裝不預填 SMTP 伺服器、寄件帳號、工作目錄與 Excel 清單；PDF 資料夾預設為 `PaySlips`（相對於工作目錄，未設定時相對於程式目錄）
+- 安裝後首次執行所有欄位皆為空白（SMTP 伺服器、寄件帳號、密碼、工作目錄、Excel 清單、PDF 資料夾、全域附件）；選擇工作目錄時自動帶入 `passwords.xlsx` 與 `PaySlips`
 
 ---
 
@@ -84,7 +84,13 @@ Windows 桌面應用程式，讀取員工清單 Excel 與 PDF 薪資單，透過
 cargo test              # 單元測試
 cargo run               # 開發執行（Debug 版會顯示主控台）
 cargo build --release   # 發佈版：target\release\FuFengMailer.exe
+
+# 產生安裝檔（需 Inno Setup 6，輸出 FuFengMailer_Rust_Setup_v{版本}.exe）
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" FuFengMailer_Setup.iss
 ```
+
+> 安裝程式使用獨立的 AppId，安裝於 `Program Files\FuFengMailer_Rust`，可與 C++ / .NET 版並存。
+> 設定檔與範本位於 `%APPDATA%\FuFengMailer_Rust`，解除安裝時保留。
 
 ### 專案結構
 
@@ -92,6 +98,7 @@ cargo build --release   # 發佈版：target\release\FuFengMailer.exe
 FuFengMailer_Rust/
 ├── Cargo.toml
 ├── build.rs                 ← 嵌入 exe 圖示與版本資訊
+├── FuFengMailer_Setup.iss   ← Inno Setup 安裝程式腳本
 ├── assets/                  ← app.ico / app.png
 └── src/
     ├── main.rs              ← 程式進入點、主視窗設定

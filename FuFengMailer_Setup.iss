@@ -60,5 +60,5 @@ Name: "{autodesktop}\{#AppDisplay}"; Filename: "{app}\{#AppExe}"; Tasks: desktop
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "立即啟動 {#AppDisplay}"; Flags: nowait postinstall skipifsilent
 
-; 設定檔與郵件範本位於 %APPDATA%\FuFengMailer（與 C++ / .NET 版共用），EML 備份位於
+; 設定檔與郵件範本位於 %APPDATA%\FuFengMailer_Rust（不與其他版本共用），EML 備份位於
 ; 使用者的 PDF 資料夾下 Sent_Backups\，解除安裝時刻意保留。
